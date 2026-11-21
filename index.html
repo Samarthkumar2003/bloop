@@ -520,7 +520,7 @@
   var DOG = [["yes","Yes, I have a dog"],["planning","I plan to get one"],["no","No"]];
   var INTENT = [[3,"Definitely would buy"],[2,"Not sure"],[1,"Definitely not"]];
   var PRO = [["pro","Yes, I would buy Bloop Pro at ₹9,899"],["both","I would like both versions to choose from"],["base","No, the ₹5,999 Bloop is enough for me"]];
-  var PRICE = [["p0","Below ₹3,499"],["p1","₹3,499 to ₹4,999"],["p2","₹5,000 to ₹6,999"],["p3","₹7,000 to ₹8,999"],["p4","₹9,000 or more"]];
+  var PRICE = [["p1","₹3,499 to ₹5,999"],["p2","₹6,000 to ₹7,499"],["p3","₹7,500 to ₹8,999"],["high","All of these are too high for me"]];
   var PRICEPRO = [["q0","Below ₹7,500"],["q1","₹7,500 to ₹8,999"],["q2","₹9,000 to ₹10,499"],["q3","₹10,500 to ₹11,999"],["q4","₹12,000 or more"]];
   var STATES = ["Andaman and Nicobar Islands","Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chandigarh","Chhattisgarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Goa","Gujarat","Haryana","Himachal Pradesh","Jammu and Kashmir","Jharkhand","Karnataka","Kerala","Ladakh","Lakshadweep","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Puducherry","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Outside India"];
   var labelOf = function(list,key){ for(var i=0;i<list.length;i++){ if(list[i][0]===key) return list[i][1]; } return String(key); };
