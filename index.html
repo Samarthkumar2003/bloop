@@ -535,14 +535,15 @@
   function wantsPro(){ return ans.pro==="pro" || ans.pro==="both"; }
   function flow(){
     var f = ["who","state","dog","feats","intent"];
-    if(ans.intent>=2) f.push("price");
-    if(ans.intent===3){ f.push("pro"); if(wantsPro()) f.push("pricepro"); }
+    if(ans.intent>=2){ f.push("price"); if(ans.price==="high") f.push("ownprice"); }
+    if(ans.intent===3){ f.push("pro"); if(wantsPro()){ f.push("pricepro"); if(ans.pricePro==="high") f.push("ownpricepro"); } }
     f.push("review"); return f;
   }
+  function afterPrice(){ return ans.intent===3 ? "pro" : "review"; }
   function stepName(){ return flow()[step]; }
   function go(name){ step = flow().indexOf(name); render(); }
 
-  function fresh(){ return {name:"", phone:"", state:"", dog:null, feats:[], intent:null, pro:null, price:null, pricePro:null}; }
+  function fresh(){ return {name:"", phone:"", state:"", dog:null, feats:[], intent:null, pro:null, price:null, pricePro:null, ownPrice:"", ownPricePro:""}; }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 
   /* ---------- colourways ---------- */
@@ -603,6 +604,11 @@
       h = progress()+'<h3 class="q">What price would feel right for Bloop Pro?</h3><p class="qhint">With <b>respiratory rate and heart rate monitoring</b>. Pick the range that feels fair to you.</p><div class="opts">'+
         PRICEPRO.map(function(o){ return '<button class="opt" type="button" data-act="pricepro" data-v="'+o[0]+'" aria-pressed="'+(ans.pricePro===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<span></span></div>';
+    } else if(s==="ownprice" || s==="ownpricepro"){
+      var pro = s==="ownpricepro";
+      h = progress()+'<h3 class="q">What price would you pay for '+(pro ? 'Bloop Pro' : 'Bloop')+'?</h3><p class="qhint">Tell us in your own words, for example ₹4,500.</p>'+
+        '<div class="field"><label for="op">The price you would pay</label><input id="op" type="text" inputmode="text" autocomplete="off" placeholder="₹" maxlength="40" value="'+esc(pro ? ans.ownPricePro : ans.ownPrice)+'"></div>'+
+        '<div class="navs">'+backBtn()+'<button class="btn btn-solid" type="button" data-act="'+(pro ? 'ownpronext' : 'ownnext')+'">Next</button></div>';
     } else if(s==="review"){
       h = progress()+'<h3 class="q">Ready to send?</h3><p class="qhint">Check your answers, then send them to the Bloop team.</p>'+recapHtml(ans)+
         '<div class="navs">'+backBtn()+'<button class="btn btn-solid" type="button" data-act="submit">Send my answers</button></div>';
@@ -620,10 +626,12 @@
       '<div><span>Would buy</span><span>'+esc(labelOf(INTENT,r.intent))+'</span></div>'+
       (r.pro ? '<div><span>Bloop Pro</span><span>'+esc(labelOf(PRO,r.pro))+'</span></div>' : '')+
       (r.price ? '<div><span>Fair price, Bloop</span><span>'+esc(labelOf(PRICE,r.price))+'</span></div>' : '')+
-      (r.pricePro ? '<div><span>Fair price, Bloop Pro</span><span>'+esc(labelOf(PRICEPRO,r.pricePro))+'</span></div>' : '')+'</div>';
+      (r.ownPrice ? '<div><span>Would pay, Bloop</span><span>'+esc(r.ownPrice)+'</span></div>' : '')+
+      (r.pricePro ? '<div><span>Fair price, Bloop Pro</span><span>'+esc(labelOf(PRICEPRO,r.pricePro))+'</span></div>' : '')+
+      (r.ownPricePro ? '<div><span>Would pay, Bloop Pro</span><span>'+esc(r.ownPricePro)+'</span></div>' : '')+'</div>';
   }
   function waLink(r){
-    var msg = "Bloop survey\nName: "+r.name+"\nState: "+r.state+"\nDog: "+labelOf(DOG,r.dog)+"\nFeatures: "+r.feats.map(featLabel).join(", ")+"\nWould buy Bloop: "+labelOf(INTENT,r.intent)+(r.price?("\nFair price for Bloop: "+labelOf(PRICE,r.price)):"")+(r.pro?("\nBloop Pro: "+labelOf(PRO,r.pro)):"")+(r.pricePro?("\nFair price for Bloop Pro: "+labelOf(PRICEPRO,r.pricePro)):"")+(r.phone?("\nMy number: "+r.phone):"");
+    var msg = "Bloop survey\nName: "+r.name+"\nState: "+r.state+"\nDog: "+labelOf(DOG,r.dog)+"\nFeatures: "+r.feats.map(featLabel).join(", ")+"\nWould buy Bloop: "+labelOf(INTENT,r.intent)+(r.price?("\nFair price for Bloop: "+labelOf(PRICE,r.price)):"")+(r.ownPrice?("\nWould pay for Bloop: "+r.ownPrice):"")+(r.ownPricePro?("\nWould pay for Bloop Pro: "+r.ownPricePro):"")+(r.pro?("\nBloop Pro: "+labelOf(PRO,r.pro)):"")+(r.pricePro?("\nFair price for Bloop Pro: "+labelOf(PRICEPRO,r.pricePro)):"")+(r.phone?("\nMy number: "+r.phone):"");
     return "https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(msg);
   }
 
@@ -647,6 +655,7 @@
       t: new Date().toISOString(), src: kiosk ? "interview" : "self",
       name: ans.name.trim(), phone: ans.phone.trim(), state: ans.state,
       dog: ans.dog, feats: ans.feats.slice(), intent: ans.intent, pro: ans.intent===3 ? ans.pro : null, price: ans.intent>=2 ? ans.price : null, pricePro: (ans.intent===3 && wantsPro()) ? ans.pricePro : null,
+      ownPrice: (ans.intent>=2 && ans.price==="high") ? ans.ownPrice.trim() : "", ownPricePro: (ans.intent===3 && wantsPro() && ans.pricePro==="high") ? ans.ownPricePro.trim() : "",
       consent: true   // the first screen tells people the team will message them about Bloop
     };
     var saved = false;
@@ -654,7 +663,7 @@
       try{
         await fetch(SURVEY_ENDPOINT, {method:"POST", mode:"no-cors", body: JSON.stringify({
           t:rec.t, src:rec.src, name:rec.name, dog:labelOf(DOG,rec.dog), feats:rec.feats.map(featLabel).join(" | "),
-          intent:labelOf(INTENT,rec.intent), pro:(rec.pro?labelOf(PRO,rec.pro):""), price:lab(PRICE,rec.price), pricePro:lab(PRICEPRO,rec.pricePro), phone:rec.phone, consent:rec.consent, state:rec.state })});
+          intent:labelOf(INTENT,rec.intent), pro:(rec.pro?labelOf(PRO,rec.pro):""), price:lab(PRICE,rec.price), pricePro:lab(PRICEPRO,rec.pricePro), phone:rec.phone, consent:rec.consent, state:rec.state, ownPrice:rec.ownPrice, ownPricePro:rec.ownPricePro })});
         saved = true;
       }catch(e){ saved = false; }
     } else if(dbNs){
@@ -688,13 +697,15 @@
     else if(act==="next"){ go("intent"); }
     else if(act==="intent"){
       ans.intent = Number(v);
-      if(ans.intent<2){ ans.price = null; }
-      if(ans.intent!==3){ ans.pro = null; ans.pricePro = null; }   // the Pro questions only follow "Definitely would buy"
+      if(ans.intent<2){ ans.price = null; ans.ownPrice = ""; }
+      if(ans.intent!==3){ ans.pro = null; ans.pricePro = null; ans.ownPricePro = ""; }   // the Pro questions only follow "Definitely would buy"
       go(ans.intent>=2 ? "price" : "review");
     }
-    else if(act==="price"){ ans.price = v; go(ans.intent===3 ? "pro" : "review"); }
-    else if(act==="pro"){ ans.pro = v; if(!wantsPro()) ans.pricePro = null; go(wantsPro() ? "pricepro" : "review"); }
-    else if(act==="pricepro"){ ans.pricePro = v; go("review"); }
+    else if(act==="price"){ ans.price = v; if(v!=="high") ans.ownPrice = ""; go(v==="high" ? "ownprice" : afterPrice()); }
+    else if(act==="ownnext"){ var o1 = $("op"); ans.ownPrice = o1 ? o1.value.trim() : ""; go(afterPrice()); }
+    else if(act==="pro"){ ans.pro = v; if(!wantsPro()){ ans.pricePro = null; ans.ownPricePro = ""; } go(wantsPro() ? "pricepro" : "review"); }
+    else if(act==="pricepro"){ ans.pricePro = v; if(v!=="high") ans.ownPricePro = ""; go(v==="high" ? "ownpricepro" : "review"); }
+    else if(act==="ownpronext"){ var o2 = $("op"); ans.ownPricePro = o2 ? o2.value.trim() : ""; go("review"); }
     else if(act==="back"){ step = Math.max(0, step-1); render(); }
     else if(act==="submit"){ b.disabled = true; submit(); }
   });
@@ -705,8 +716,8 @@
     }
   });
   sv.addEventListener("keydown", function(e){
-    if(e.key==="Enter" && e.target && (e.target.id==="nm" || e.target.id==="phone")){
-      e.preventDefault(); var go1 = sv.querySelector('[data-act="start"]'); if(go1) go1.click();
+    if(e.key==="Enter" && e.target && (e.target.id==="nm" || e.target.id==="phone" || e.target.id==="op")){
+      e.preventDefault(); var go1 = sv.querySelector('[data-act="start"],[data-act="ownnext"],[data-act="ownpronext"]'); if(go1) go1.click();
     }
   });
   render();
@@ -754,9 +765,9 @@
   }
   function csvCell(v){ v = String(v==null?"":v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
   function csv(){
-    var head = ["time","how","name","state","dog","features","would_buy","bloop_pro","fair_price_bloop","fair_price_pro","whatsapp","consent"];
+    var head = ["time","how","name","state","dog","features","would_buy","bloop_pro","fair_price_bloop","fair_price_pro","whatsapp","consent","own_price_bloop","own_price_pro"];
     var lines = [head.join(",")].concat(lastDocs.map(function(d){ var r = d.data();
-      return [r.t,r.src,r.name,r.state,r.dog,(r.feats||[]).map(featLabel).join(" | "),labelOf(INTENT,r.intent),(r.pro?labelOf(PRO,r.pro):""),lab(PRICE,r.price),lab(PRICEPRO,r.pricePro),r.phone,r.consent].map(csvCell).join(","); }));
+      return [r.t,r.src,r.name,r.state,r.dog,(r.feats||[]).map(featLabel).join(" | "),labelOf(INTENT,r.intent),(r.pro?labelOf(PRO,r.pro):""),lab(PRICE,r.price),lab(PRICEPRO,r.pricePro),r.phone,r.consent,r.ownPrice,r.ownPricePro].map(csvCell).join(","); }));
     return lines.join("\n");
   }
 
