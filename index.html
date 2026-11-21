@@ -256,7 +256,7 @@
   <div class="navrow">
     <a class="logo" href="#top" aria-label="bloop">bloop</a>
     <nav class="navlinks" aria-label="Sections">
-      <a href="#design">Design</a><a href="#colours">Colours</a><a href="#features">Features</a><a href="#price">Price</a>
+      <a href="#design">Design</a><a href="#colours">Colours</a><a href="#features">Features</a><a href="#included">Included</a>
     </nav>
     <a class="btn btn-solid" href="#survey">Take the survey</a>
   </div>
@@ -282,9 +282,9 @@
             <div class="kpi"><div class="v num" id="k-own">0</div><div class="l">own a dog</div></div>
             <div class="kpi"><div class="v num" id="k-top">–</div><div class="l">of dog owners would definitely buy</div></div>
           </div>
-          <h3 style="margin-top:14px">Would buy at one-time ₹5,999 + ₹149/month</h3><div class="dist" id="d-intent"></div>
+          <h3 style="margin-top:14px">Would buy Bloop</h3><div class="dist" id="d-intent"></div>
           <h3 style="margin-top:14px">Fair price (Bloop)</h3><div class="dist" id="d-price"></div>
-          <h3 style="margin-top:14px">Bloop Pro at ₹9,899 (of those who would buy)</h3><div class="dist" id="d-pro"></div>
+          <h3 style="margin-top:14px">Bloop Pro interest (of those who would buy)</h3><div class="dist" id="d-pro"></div>
           <h3 style="margin-top:14px">Fair price (Bloop Pro, of those who would buy)</h3><div class="dist" id="d-pricepro"></div>
           <h3 style="margin-top:14px">Features people picked</h3><div class="dist" id="d-feat"></div>
           <div class="svrow" style="margin-top:14px"><button class="btn btn-champ" id="csv" type="button">Download CSV</button><span class="muted" id="csvmsg"></span></div>
@@ -316,8 +316,7 @@
     <div class="eyebrow">Why Bloop</div>
     <h2 class="h-lg" id="why-h">We watch our own health. They cannot tell us theirs.</h2>
     <p class="lead">Many of us wear a smart watch from brands like Apple or Whoop, which can cost anywhere from ₹25,000 to ₹50,000, to keep track of our health and fitness.</p>
-    <p class="lead">The question is, can we spend ₹5,999 for our small paws, who cannot even tell us what they are feeling?</p>
-    <p class="pricenote">Bloop: one-time <b class="num">₹5,999</b> &nbsp;+&nbsp; <b class="num">₹149</b> per month</p>
+    <p class="lead">The question is, would you do the same for our small paws, who cannot even tell us what they are feeling?</p>
     <a class="btn btn-line" href="#features">See what it does</a>
   </div>
 </section>
@@ -428,12 +427,10 @@
   </div>
 </section>
 
-<section id="price" class="night">
+<section id="included" class="night">
   <div class="wrap price">
-    <div class="eyebrow">Price</div>
-    <div class="sub">One-time</div>
-    <div class="big num">₹5,999</div>
-    <div class="sub">+ ₹149 per month</div>
+    <div class="eyebrow">Included</div>
+    <div class="sub">Everything in one collar</div>
     <ul>
       <li>Waterproof collar with GPS, light and sensors</li>
       <li>4G connection for live location</li>
@@ -519,7 +516,8 @@
   ];
   var DOG = [["yes","Yes, I have a dog"],["planning","I plan to get one"],["no","No"]];
   var INTENT = [[3,"Definitely would buy"],[2,"Not sure"],[1,"Definitely not"]];
-  var PRO = [["pro","Yes, I would buy Bloop Pro at ₹9,899"],["both","I would like both versions to choose from"],["base","No, the ₹5,999 Bloop is enough for me"]];
+  var PRO = [["pro","Yes, I would buy Bloop Pro"],["both","I would like both versions to choose from"],["base","No, Bloop is enough for me"]];
+  var lab = function(list,key){ return (key===null || key===undefined || key==="") ? "" : labelOf(list,key); };
   var PRICE = [["p1","₹3,499 to ₹5,999"],["p2","₹6,000 to ₹7,499"],["p3","₹7,500 to ₹8,999"],["high","All of these are too high for me"]];
   var PRICEPRO = [["q1","₹7,999 to ₹8,999"],["q2","₹9,000 to ₹10,500"],["high","All of these are too high for me"]];
   var STATES = ["Andaman and Nicobar Islands","Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chandigarh","Chhattisgarh","Dadra and Nagar Haveli and Daman and Diu","Delhi","Goa","Gujarat","Haryana","Himachal Pradesh","Jammu and Kashmir","Jharkhand","Karnataka","Kerala","Ladakh","Lakshadweep","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Puducherry","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal","Outside India"];
@@ -532,7 +530,14 @@
   var kiosk = false, step = 0, ans = fresh();
 
   /* The Bloop Pro question only appears after "Definitely would buy" */
-  function flow(){ return ["who","state","dog","feats","intent","price"].concat(ans.intent===3 ? ["pro","pricepro"] : []).concat(["review"]); }
+  /* Price is only asked of people who said "Definitely would buy" or "Not sure"; Bloop Pro only after "Definitely would buy" */
+  function wantsPro(){ return ans.pro==="pro" || ans.pro==="both"; }
+  function flow(){
+    var f = ["who","state","dog","feats","intent"];
+    if(ans.intent>=2) f.push("price");
+    if(ans.intent===3){ f.push("pro"); if(wantsPro()) f.push("pricepro"); }
+    f.push("review"); return f;
+  }
   function stepName(){ return flow()[step]; }
   function go(name){ step = flow().indexOf(name); render(); }
 
@@ -582,19 +587,19 @@
         FEATS.map(function(f){ var on = ans.feats.indexOf(f.id)>-1; return '<button class="opt" type="button" data-act="feat" data-v="'+f.id+'" aria-pressed="'+on+'"><span>'+f.label+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<button class="btn btn-solid" type="button" data-act="next"'+(ans.feats.length? '' : ' disabled')+'>Next</button></div>';
     } else if(s==="intent"){
-      h = progress()+'<h3 class="q">Would you buy Bloop at a one-time ₹5,999 plus ₹149 per month?</h3><p class="qhint">Pay ₹5,999 once for the collar, then ₹149 per month for 4G, the app, your data, the AI Pet Avatar and AI Vet Connect.</p><div class="opts">'+
+      h = progress()+'<h3 class="q">Would you buy the Bloop collar for your dog?</h3><p class="qhint">Live GPS over 4G, sleep, steps and calories, the app, the AI Pet Avatar and AI Vet Connect.</p><div class="opts">'+
         INTENT.map(function(o){ return '<button class="opt" type="button" data-act="intent" data-v="'+o[0]+'" aria-pressed="'+(ans.intent===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<span></span></div>';
     } else if(s==="pro"){
-      h = progress()+'<h3 class="q">Would you pay ₹9,899 for Bloop Pro?</h3><p class="qhint">Bloop Pro has everything above and adds respiratory rate and heart rate monitoring, so you can see how your dog is doing even at rest.</p><div class="opts">'+
+      h = progress()+'<h3 class="q">Would you buy Bloop Pro?</h3><p class="qhint">Bloop Pro has everything above and adds respiratory rate and heart rate monitoring, so you can see how your dog is doing even at rest.</p><div class="opts">'+
         PRO.map(function(o){ return '<button class="opt" type="button" data-act="pro" data-v="'+o[0]+'" aria-pressed="'+(ans.pro===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<span></span></div>';
     } else if(s==="price"){
-      h = progress()+'<h3 class="q">What one-time price feels right for Bloop?</h3><p class="qhint">Pick the range that feels fair to you. The ₹149 monthly plan comes on top.</p><div class="opts">'+
+      h = progress()+'<h3 class="q">What price would feel right for Bloop?</h3><p class="qhint">Pick the range that feels fair to you for the collar. A small monthly plan covers 4G and the app.</p><div class="opts">'+
         PRICE.map(function(o){ return '<button class="opt" type="button" data-act="price" data-v="'+o[0]+'" aria-pressed="'+(ans.price===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<span></span></div>';
     } else if(s==="pricepro"){
-      h = progress()+'<h3 class="q">What one-time price feels right for Bloop Pro?</h3><p class="qhint">With respiratory rate and heart rate monitoring. Pick the range that feels fair to you.</p><div class="opts">'+
+      h = progress()+'<h3 class="q">What price would feel right for Bloop Pro?</h3><p class="qhint">With respiratory rate and heart rate monitoring. Pick the range that feels fair to you.</p><div class="opts">'+
         PRICEPRO.map(function(o){ return '<button class="opt" type="button" data-act="pricepro" data-v="'+o[0]+'" aria-pressed="'+(ans.pricePro===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<span></span></div>';
     } else if(s==="review"){
@@ -613,11 +618,11 @@
       '<div><span>Features</span><span>'+esc(feats)+'</span></div>'+
       '<div><span>Would buy</span><span>'+esc(labelOf(INTENT,r.intent))+'</span></div>'+
       (r.pro ? '<div><span>Bloop Pro</span><span>'+esc(labelOf(PRO,r.pro))+'</span></div>' : '')+
-      '<div><span>Fair price, Bloop</span><span>'+esc(labelOf(PRICE,r.price))+'</span></div>'+
+      (r.price ? '<div><span>Fair price, Bloop</span><span>'+esc(labelOf(PRICE,r.price))+'</span></div>' : '')+
       (r.pricePro ? '<div><span>Fair price, Bloop Pro</span><span>'+esc(labelOf(PRICEPRO,r.pricePro))+'</span></div>' : '')+'</div>';
   }
   function waLink(r){
-    var msg = "Bloop survey\nName: "+r.name+"\nState: "+r.state+"\nDog: "+labelOf(DOG,r.dog)+"\nFeatures: "+r.feats.map(featLabel).join(", ")+"\nWould buy at one-time ₹5,999 + ₹149/month: "+labelOf(INTENT,r.intent)+"\nFair price for Bloop: "+labelOf(PRICE,r.price)+(r.pro?("\nBloop Pro at ₹9,899: "+labelOf(PRO,r.pro)):"")+(r.pricePro?("\nFair price for Bloop Pro: "+labelOf(PRICEPRO,r.pricePro)):"")+(r.phone?("\nMy number: "+r.phone):"");
+    var msg = "Bloop survey\nName: "+r.name+"\nState: "+r.state+"\nDog: "+labelOf(DOG,r.dog)+"\nFeatures: "+r.feats.map(featLabel).join(", ")+"\nWould buy Bloop: "+labelOf(INTENT,r.intent)+(r.price?("\nFair price for Bloop: "+labelOf(PRICE,r.price)):"")+(r.pro?("\nBloop Pro: "+labelOf(PRO,r.pro)):"")+(r.pricePro?("\nFair price for Bloop Pro: "+labelOf(PRICEPRO,r.pricePro)):"")+(r.phone?("\nMy number: "+r.phone):"");
     return "https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(msg);
   }
 
@@ -640,7 +645,7 @@
     var rec = {
       t: new Date().toISOString(), src: kiosk ? "interview" : "self",
       name: ans.name.trim(), phone: ans.phone.trim(), state: ans.state,
-      dog: ans.dog, feats: ans.feats.slice(), intent: ans.intent, pro: ans.intent===3 ? ans.pro : null, price: ans.price, pricePro: ans.intent===3 ? ans.pricePro : null,
+      dog: ans.dog, feats: ans.feats.slice(), intent: ans.intent, pro: ans.intent===3 ? ans.pro : null, price: ans.intent>=2 ? ans.price : null, pricePro: (ans.intent===3 && wantsPro()) ? ans.pricePro : null,
       consent: true   // the first screen tells people the team will message them about Bloop
     };
     var saved = false;
@@ -648,7 +653,7 @@
       try{
         await fetch(SURVEY_ENDPOINT, {method:"POST", mode:"no-cors", body: JSON.stringify({
           t:rec.t, src:rec.src, name:rec.name, dog:labelOf(DOG,rec.dog), feats:rec.feats.map(featLabel).join(" | "),
-          intent:labelOf(INTENT,rec.intent), pro:(rec.pro?labelOf(PRO,rec.pro):""), price:labelOf(PRICE,rec.price), pricePro:(rec.pricePro?labelOf(PRICEPRO,rec.pricePro):""), phone:rec.phone, consent:rec.consent, state:rec.state })});
+          intent:labelOf(INTENT,rec.intent), pro:(rec.pro?labelOf(PRO,rec.pro):""), price:lab(PRICE,rec.price), pricePro:lab(PRICEPRO,rec.pricePro), phone:rec.phone, consent:rec.consent, state:rec.state })});
         saved = true;
       }catch(e){ saved = false; }
     } else if(dbNs){
@@ -682,11 +687,12 @@
     else if(act==="next"){ go("intent"); }
     else if(act==="intent"){
       ans.intent = Number(v);
+      if(ans.intent<2){ ans.price = null; }
       if(ans.intent!==3){ ans.pro = null; ans.pricePro = null; }   // the Pro questions only follow "Definitely would buy"
-      go("price");
+      go(ans.intent>=2 ? "price" : "review");
     }
     else if(act==="price"){ ans.price = v; go(ans.intent===3 ? "pro" : "review"); }
-    else if(act==="pro"){ ans.pro = v; go("pricepro"); }
+    else if(act==="pro"){ ans.pro = v; if(!wantsPro()) ans.pricePro = null; go(wantsPro() ? "pricepro" : "review"); }
     else if(act==="pricepro"){ ans.pricePro = v; go("review"); }
     else if(act==="back"){ step = Math.max(0, step-1); render(); }
     else if(act==="submit"){ b.disabled = true; submit(); }
@@ -738,17 +744,18 @@
     bars($("d-intent"), INTENT.map(function(o){ return [o[1], rs.filter(function(r){ return r.intent===o[0]; }).length]; }), n);
     var buyers = rs.filter(function(r){ return r.intent===3; });
     bars($("d-pro"), PRO.map(function(o){ return [o[1], buyers.filter(function(r){ return r.pro===o[0]; }).length]; }), buyers.length);
-    bars($("d-price"), PRICE.map(function(o){ return [o[1], rs.filter(function(r){ return r.price===o[0]; }).length]; }), n);
-    bars($("d-pricepro"), PRICEPRO.map(function(o){ return [o[1], buyers.filter(function(r){ return r.pricePro===o[0]; }).length]; }), buyers.length);
+    var pricers = rs.filter(function(r){ return r.intent>=2; }), proYes = buyers.filter(function(r){ return r.pro==="pro" || r.pro==="both"; });
+    bars($("d-price"), PRICE.map(function(o){ return [o[1], pricers.filter(function(r){ return r.price===o[0]; }).length]; }), pricers.length);
+    bars($("d-pricepro"), PRICEPRO.map(function(o){ return [o[1], proYes.filter(function(r){ return r.pricePro===o[0]; }).length]; }), proYes.length);
     var fc = FEATS.map(function(f){ return [f.label, rs.filter(function(r){ return (r.feats||[]).indexOf(f.id)>-1; }).length]; });
     fc.sort(function(a,b){ return b[1]-a[1]; });
     bars($("d-feat"), fc, n);
   }
   function csvCell(v){ v = String(v==null?"":v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
   function csv(){
-    var head = ["time","how","name","state","dog","features","would_buy","pro_9899","fair_price_bloop","fair_price_pro","whatsapp","consent"];
+    var head = ["time","how","name","state","dog","features","would_buy","bloop_pro","fair_price_bloop","fair_price_pro","whatsapp","consent"];
     var lines = [head.join(",")].concat(lastDocs.map(function(d){ var r = d.data();
-      return [r.t,r.src,r.name,r.state,r.dog,(r.feats||[]).map(featLabel).join(" | "),labelOf(INTENT,r.intent),(r.pro?labelOf(PRO,r.pro):""),labelOf(PRICE,r.price),(r.pricePro?labelOf(PRICEPRO,r.pricePro):""),r.phone,r.consent].map(csvCell).join(","); }));
+      return [r.t,r.src,r.name,r.state,r.dog,(r.feats||[]).map(featLabel).join(" | "),labelOf(INTENT,r.intent),(r.pro?labelOf(PRO,r.pro):""),lab(PRICE,r.price),lab(PRICEPRO,r.pricePro),r.phone,r.consent].map(csvCell).join(","); }));
     return lines.join("\n");
   }
 
