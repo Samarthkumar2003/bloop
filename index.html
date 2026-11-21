@@ -560,12 +560,12 @@
   function render(){
     var h = "", s = stepName();
     if(s==="who"){
-      h = progress()+'<h3 class="q">First, who are we speaking with?</h3><p class="qhint">Your name and WhatsApp number, so the Bloop team can reach you about the launch.</p>'+
+      h = progress()+'<h3 class="q">Hello, lovely to meet you.</h3><p class="qhint">Before we begin, we would love to know who we are talking to. Your name and WhatsApp number let us say thank you, and tell you first when Bloop is ready.</p>'+
         '<div class="field"><label for="nm">Your name</label><input id="nm" type="text" autocomplete="name" placeholder="Priya Sharma" maxlength="80" value="'+esc(ans.name)+'"></div>'+
         '<div class="field"><label for="phone">WhatsApp number</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+91 98765 43210" maxlength="20" value="'+esc(ans.phone)+'"></div>'+
-        '<p class="qhint" style="font-size:0.85rem">We will only message you about Bloop. You can ask to be removed at any time.</p>'+
+        '<p class="qhint" style="font-size:0.85rem">We will only message you about Bloop, and you can ask us to stop at any time. Thank you for taking a minute for your dog.</p>'+
         '<div class="ferr" id="ferr" role="alert"></div>'+
-        '<div class="navs"><span></span><button class="btn btn-solid" type="button" data-act="start">Start survey</button></div>';
+        '<div class="navs"><span></span><button class="btn btn-solid" type="button" data-act="start">Let us begin</button></div>';
     } else if(s==="dog"){
       h = progress()+'<h3 class="q">Do you have a dog?</h3><div class="opts">'+
         DOG.map(function(o){ return '<button class="opt" type="button" data-act="dog" data-v="'+o[0]+'" aria-pressed="'+(ans.dog===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>';
@@ -659,8 +659,8 @@
       var nm = $("nm"), ph0 = $("phone"), err = $("ferr");
       ans.name = nm ? nm.value.trim() : ""; ans.phone = ph0 ? ph0.value.trim() : "";
       var digits = ans.phone.replace(/\D/g,"").length;
-      if(!ans.name){ err.textContent = "Please enter your name."; nm.focus(); return; }
-      if(digits<7 || digits>15 || /[^0-9+\-()\s.]/.test(ans.phone)){ err.textContent = "Please enter a valid WhatsApp number, for example +91 98765 43210."; ph0.focus(); return; }
+      if(!ans.name){ err.textContent = "Could you tell us your name, please?"; nm.focus(); return; }
+      if(digits<7 || digits>15 || /[^0-9+\-()\s.]/.test(ans.phone)){ err.textContent = "That number does not look quite right. Could you check it? For example +91 98765 43210."; ph0.focus(); return; }
       go("dog");
     }
     else if(act==="dog"){ ans.dog = v; go("feats"); }
