@@ -184,6 +184,7 @@
   .bar i{ display:block; height:100%; background:var(--champagne); border-radius:99px; transition:width .25s ease; }
   .q{ margin-top:22px; font-size:clamp(1.8rem,5.6vw,2.4rem); }
   .qhint{ margin-top:10px; color:var(--ink-soft); font-size:0.95rem; }
+  .qhint b{ color:var(--ink); font-weight:600; }
   .opts{ margin-top:22px; display:grid; gap:10px; }
   .opts.two{ grid-template-columns:1fr 1fr; }
   @media (max-width:440px){ .opts.two{ grid-template-columns:1fr; } }
@@ -591,7 +592,7 @@
         INTENT.map(function(o){ return '<button class="opt" type="button" data-act="intent" data-v="'+o[0]+'" aria-pressed="'+(ans.intent===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<span></span></div>';
     } else if(s==="pro"){
-      h = progress()+'<h3 class="q">Would you buy Bloop Pro?</h3><p class="qhint">Bloop Pro has everything above and adds respiratory rate and heart rate monitoring, so you can see how your dog is doing even at rest.</p><div class="opts">'+
+      h = progress()+'<h3 class="q">Would you buy Bloop Pro?</h3><p class="qhint">Bloop Pro has everything above and adds <b>respiratory rate and heart rate monitoring</b>, so you can see how your dog is doing even at rest.</p><div class="opts">'+
         PRO.map(function(o){ return '<button class="opt" type="button" data-act="pro" data-v="'+o[0]+'" aria-pressed="'+(ans.pro===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<span></span></div>';
     } else if(s==="price"){
@@ -599,7 +600,7 @@
         PRICE.map(function(o){ return '<button class="opt" type="button" data-act="price" data-v="'+o[0]+'" aria-pressed="'+(ans.price===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<span></span></div>';
     } else if(s==="pricepro"){
-      h = progress()+'<h3 class="q">What price would feel right for Bloop Pro?</h3><p class="qhint">With respiratory rate and heart rate monitoring. Pick the range that feels fair to you.</p><div class="opts">'+
+      h = progress()+'<h3 class="q">What price would feel right for Bloop Pro?</h3><p class="qhint">With <b>respiratory rate and heart rate monitoring</b>. Pick the range that feels fair to you.</p><div class="opts">'+
         PRICEPRO.map(function(o){ return '<button class="opt" type="button" data-act="pricepro" data-v="'+o[0]+'" aria-pressed="'+(ans.pricePro===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<span></span></div>';
     } else if(s==="review"){
