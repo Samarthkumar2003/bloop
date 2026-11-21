@@ -190,7 +190,10 @@
   .linkbtn{ font:inherit; font-weight:500; background:none; border:none; color:var(--ink-soft); cursor:pointer; padding:10px 6px; text-decoration:underline; }
   .field{ margin-top:18px; display:grid; gap:8px; }
   .field label{ font-weight:500; font-size:0.95rem; }
-  .field input[type="tel"], .field input[type="url"]{ font:inherit; font-size:1.05rem; padding:14px 16px; border-radius:14px; border:1px solid var(--line-strong); background:transparent; color:var(--ink); width:100%; }
+  .ferr{ margin-top:12px; color:#b3402f; font-size:0.9rem; min-height:1.2em; }
+  :root[data-theme="dark"] .ferr{ color:#f08a76; }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .ferr{ color:#f08a76; } }
+  .field input[type="text"], .field input[type="tel"], .field input[type="url"]{ font:inherit; font-size:1.05rem; padding:14px 16px; border-radius:14px; border:1px solid var(--line-strong); background:transparent; color:var(--ink); width:100%; }
   .check{ display:flex; gap:10px; align-items:flex-start; font-size:0.88rem; color:var(--ink-soft); }
   .check input{ width:20px; height:20px; margin-top:2px; accent-color:var(--ink); }
   .done{ text-align:center; display:grid; gap:14px; justify-items:center; padding:12px 0; }
@@ -480,7 +483,7 @@
 <script>
 (function(){
   "use strict";
-  var PAGE_URL = "";          // public link of this page, used for the QR code
+  var PAGE_URL = "https://samarthkumar2003.github.io/bloop/";          // public link of this page, used for the QR code
   var WHATSAPP_NUMBER = "";   // digits with country code, e.g. 919876543210; empty hides the WhatsApp step
   var SURVEY_ENDPOINT = "https://script.google.com/macros/s/AKfycby33zWuJNx_Jtdk-ztw3R-Vd_PGV2o3EhmOPzgICua6JN1Za1JLE8SgnU77206bR6k1aQ/exec";   // Google Apps Script web app URL (hosted version only); empty uses the built-in database
 
@@ -509,11 +512,11 @@
   var kiosk = false, step = 0, ans = fresh();
 
   /* The Bloop Pro question only appears after "Definitely would buy" */
-  function flow(){ return ["dog","feats","intent","price"].concat(ans.intent===3 ? ["pro","pricepro"] : []).concat(["contact"]); }
+  function flow(){ return ["who","dog","feats","intent","price"].concat(ans.intent===3 ? ["pro","pricepro"] : []).concat(["review"]); }
   function stepName(){ return flow()[step]; }
   function go(name){ step = flow().indexOf(name); render(); }
 
-  function fresh(){ return {dog:null, feats:[], intent:null, pro:null, price:null, pricePro:null, phone:"", consent:false}; }
+  function fresh(){ return {name:"", phone:"", dog:null, feats:[], intent:null, pro:null, price:null, pricePro:null}; }
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 
   /* ---------- colourways ---------- */
@@ -539,7 +542,14 @@
 
   function render(){
     var h = "", s = stepName();
-    if(s==="dog"){
+    if(s==="who"){
+      h = progress()+'<h3 class="q">First, who are we speaking with?</h3><p class="qhint">Your name and WhatsApp number, so the Bloop team can reach you about the launch.</p>'+
+        '<div class="field"><label for="nm">Your name</label><input id="nm" type="text" autocomplete="name" placeholder="Priya Sharma" maxlength="80" value="'+esc(ans.name)+'"></div>'+
+        '<div class="field"><label for="phone">WhatsApp number</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+91 98765 43210" maxlength="20" value="'+esc(ans.phone)+'"></div>'+
+        '<p class="qhint" style="font-size:0.85rem">We will only message you about Bloop. You can ask to be removed at any time.</p>'+
+        '<div class="ferr" id="ferr" role="alert"></div>'+
+        '<div class="navs"><span></span><button class="btn btn-solid" type="button" data-act="start">Start survey</button></div>';
+    } else if(s==="dog"){
       h = progress()+'<h3 class="q">Do you have a dog?</h3><div class="opts">'+
         DOG.map(function(o){ return '<button class="opt" type="button" data-act="dog" data-v="'+o[0]+'" aria-pressed="'+(ans.dog===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>';
     } else if(s==="feats"){
@@ -562,10 +572,8 @@
       h = progress()+'<h3 class="q">How does ₹9,899 feel for Bloop Pro?</h3><p class="qhint">With respiratory rate and heart rate monitoring.</p><div class="opts two">'+
         PRICE.map(function(o){ return '<button class="opt" type="button" data-act="pricepro" data-v="'+o[0]+'" aria-pressed="'+(ans.pricePro===o[0])+'"><span>'+o[1]+'</span><span class="tick"></span></button>'; }).join("")+'</div>'+
         '<div class="navs">'+backBtn()+'<span></span></div>';
-    } else if(s==="contact"){
-      h = progress()+'<h3 class="q">Want to hear when Bloop launches?</h3><p class="qhint">Optional. Leave it blank to stay anonymous.</p>'+
-        '<div class="field"><label for="phone">WhatsApp number</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+91 98765 43210" value="'+esc(ans.phone)+'"></div>'+
-        '<label class="check" style="margin-top:12px"><input id="consent" type="checkbox"'+(ans.consent?' checked':'')+'><span>Yes, message me about Bloop. I can ask to be removed at any time.</span></label>'+
+    } else if(s==="review"){
+      h = progress()+'<h3 class="q">Ready to send?</h3><p class="qhint">Check your answers, then send them to the Bloop team.</p>'+recapHtml(ans)+
         '<div class="navs">'+backBtn()+'<button class="btn btn-solid" type="button" data-act="submit">Send my answers</button></div>';
     }
     sv.innerHTML = h;
@@ -573,7 +581,9 @@
 
   function recapHtml(r){
     var feats = r.feats.map(featLabel).join(", ") || "none";
-    return '<div class="recap"><div><span>Dog</span><span>'+esc(labelOf(DOG,r.dog))+'</span></div>'+
+    return '<div class="recap"><div><span>Name</span><span>'+esc(r.name)+'</span></div>'+
+      '<div><span>WhatsApp</span><span>'+esc(r.phone)+'</span></div>'+
+      '<div><span>Dog</span><span>'+esc(labelOf(DOG,r.dog))+'</span></div>'+
       '<div><span>Features</span><span>'+esc(feats)+'</span></div>'+
       '<div><span>Would buy</span><span>'+esc(labelOf(INTENT,r.intent))+'</span></div>'+
       (r.pro ? '<div><span>Bloop Pro</span><span>'+esc(labelOf(PRO,r.pro))+'</span></div>' : '')+
@@ -581,7 +591,7 @@
       (r.pricePro ? '<div><span>₹9,899 feels</span><span>'+esc(labelOf(PRICE,r.pricePro))+'</span></div>' : '')+'</div>';
   }
   function waLink(r){
-    var msg = "Bloop survey\nDog: "+labelOf(DOG,r.dog)+"\nFeatures: "+r.feats.map(featLabel).join(", ")+"\nWould buy at one-time ₹5,999 + ₹149/month: "+labelOf(INTENT,r.intent)+"\n₹5,999 feels: "+labelOf(PRICE,r.price)+(r.pro?("\nBloop Pro at ₹9,899: "+labelOf(PRO,r.pro)):"")+(r.pricePro?("\n₹9,899 feels: "+labelOf(PRICE,r.pricePro)):"")+(r.phone?("\nMy number: "+r.phone):"");
+    var msg = "Bloop survey\nName: "+r.name+"\nDog: "+labelOf(DOG,r.dog)+"\nFeatures: "+r.feats.map(featLabel).join(", ")+"\nWould buy at one-time ₹5,999 + ₹149/month: "+labelOf(INTENT,r.intent)+"\n₹5,999 feels: "+labelOf(PRICE,r.price)+(r.pro?("\nBloop Pro at ₹9,899: "+labelOf(PRO,r.pro)):"")+(r.pricePro?("\n₹9,899 feels: "+labelOf(PRICE,r.pricePro)):"")+(r.phone?("\nMy number: "+r.phone):"");
     return "https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(msg);
   }
 
@@ -603,14 +613,15 @@
   async function submit(){
     var rec = {
       t: new Date().toISOString(), src: kiosk ? "interview" : "self",
+      name: ans.name.trim(), phone: ans.phone.trim(),
       dog: ans.dog, feats: ans.feats.slice(), intent: ans.intent, pro: ans.intent===3 ? ans.pro : null, price: ans.price, pricePro: ans.intent===3 ? ans.pricePro : null,
-      phone: ans.phone.trim(), consent: !!(ans.consent && ans.phone.trim())
+      consent: true   // the first screen tells people the team will message them about Bloop
     };
     var saved = false;
     if(SURVEY_ENDPOINT){
       try{
         await fetch(SURVEY_ENDPOINT, {method:"POST", mode:"no-cors", body: JSON.stringify({
-          t:rec.t, src:rec.src, dog:labelOf(DOG,rec.dog), feats:rec.feats.map(featLabel).join(" | "),
+          t:rec.t, src:rec.src, name:rec.name, dog:labelOf(DOG,rec.dog), feats:rec.feats.map(featLabel).join(" | "),
           intent:labelOf(INTENT,rec.intent), pro:(rec.pro?labelOf(PRO,rec.pro):""), price:labelOf(PRICE,rec.price), pricePro:(rec.pricePro?labelOf(PRICE,rec.pricePro):""), phone:rec.phone, consent:rec.consent })});
         saved = true;
       }catch(e){ saved = false; }
@@ -627,7 +638,15 @@
   sv.addEventListener("click", function(e){
     var b = e.target.closest("[data-act]"); if(!b || b.disabled) return;
     var act = b.getAttribute("data-act"), v = b.getAttribute("data-v");
-    if(act==="dog"){ ans.dog = v; go("feats"); }
+    if(act==="start"){
+      var nm = $("nm"), ph0 = $("phone"), err = $("ferr");
+      ans.name = nm ? nm.value.trim() : ""; ans.phone = ph0 ? ph0.value.trim() : "";
+      var digits = ans.phone.replace(/\D/g,"").length;
+      if(!ans.name){ err.textContent = "Please enter your name."; nm.focus(); return; }
+      if(digits<7 || digits>15 || /[^0-9+\-()\s.]/.test(ans.phone)){ err.textContent = "Please enter a valid WhatsApp number, for example +91 98765 43210."; ph0.focus(); return; }
+      go("dog");
+    }
+    else if(act==="dog"){ ans.dog = v; go("feats"); }
     else if(act==="feat"){
       var i = ans.feats.indexOf(v);
       if(i>-1) ans.feats.splice(i,1); else ans.feats.push(v);
@@ -639,14 +658,15 @@
       if(ans.intent!==3){ ans.pro = null; ans.pricePro = null; }   // the Pro questions only follow "Definitely would buy"
       go("price");
     }
-    else if(act==="price"){ ans.price = v; go(ans.intent===3 ? "pro" : "contact"); }
+    else if(act==="price"){ ans.price = v; go(ans.intent===3 ? "pro" : "review"); }
     else if(act==="pro"){ ans.pro = v; go("pricepro"); }
-    else if(act==="pricepro"){ ans.pricePro = v; go("contact"); }
+    else if(act==="pricepro"){ ans.pricePro = v; go("review"); }
     else if(act==="back"){ step = Math.max(0, step-1); render(); }
-    else if(act==="submit"){
-      var ph = $("phone"), cs = $("consent");
-      ans.phone = ph ? ph.value : ""; ans.consent = cs ? cs.checked : false;
-      b.disabled = true; submit();
+    else if(act==="submit"){ b.disabled = true; submit(); }
+  });
+  sv.addEventListener("keydown", function(e){
+    if(e.key==="Enter" && e.target && (e.target.id==="nm" || e.target.id==="phone")){
+      e.preventDefault(); var go1 = sv.querySelector('[data-act="start"]'); if(go1) go1.click();
     }
   });
   render();
@@ -693,9 +713,9 @@
   }
   function csvCell(v){ v = String(v==null?"":v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
   function csv(){
-    var head = ["time","how","dog","features","would_buy","pro_9899","price_feel_5999","price_feel_9899","whatsapp","consent"];
+    var head = ["time","how","name","dog","features","would_buy","pro_9899","price_feel_5999","price_feel_9899","whatsapp","consent"];
     var lines = [head.join(",")].concat(lastDocs.map(function(d){ var r = d.data();
-      return [r.t,r.src,r.dog,(r.feats||[]).map(featLabel).join(" | "),labelOf(INTENT,r.intent),(r.pro?labelOf(PRO,r.pro):""),labelOf(PRICE,r.price),(r.pricePro?labelOf(PRICE,r.pricePro):""),r.phone,r.consent].map(csvCell).join(","); }));
+      return [r.t,r.src,r.name,r.dog,(r.feats||[]).map(featLabel).join(" | "),labelOf(INTENT,r.intent),(r.pro?labelOf(PRO,r.pro):""),labelOf(PRICE,r.price),(r.pricePro?labelOf(PRICE,r.pricePro):""),r.phone,r.consent].map(csvCell).join(","); }));
     return lines.join("\n");
   }
 
