@@ -604,7 +604,7 @@
     var rec = {
       t: new Date().toISOString(), src: kiosk ? "interview" : "self",
       dog: ans.dog, feats: ans.feats.slice(), intent: ans.intent, pro: ans.intent===3 ? ans.pro : null, price: ans.price, pricePro: ans.intent===3 ? ans.pricePro : null,
-      phone: ans.consent ? ans.phone.trim() : "", consent: !!(ans.consent && ans.phone.trim())
+      phone: ans.phone.trim(), consent: !!(ans.consent && ans.phone.trim())
     };
     var saved = false;
     if(SURVEY_ENDPOINT){
